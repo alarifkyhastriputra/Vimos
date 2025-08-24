@@ -1,0 +1,1272 @@
+<html class="scroll-smooth" lang="id">
+ <head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Vimos - Media Sosial Hitam Putih Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+   rel="stylesheet"
+  />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <style>
+   body {
+    font-family: "Roboto", sans-serif;
+  }
+  </style>
+ </head>
+ <body class="bg-white text-black min-h-screen flex flex-col">
+  <header
+   class="sticky top-0 z-30 bg-white border-b border-gray-300 px-4 py-3 flex items-center"
+  >
+   <div class="flex items-center w-full max-w-xl mx-auto">
+    <i class="fas fa-search text-gray-700 text-lg mr-3"></i>
+    <input
+     aria-label="Search"
+     class="w-full bg-white text-black placeholder-gray-600 focus:outline-none"
+     id="searchInput"
+     placeholder="Cari di Vimos..."
+     type="search"
+    />
+   </div>
+  </header>
+  <main
+   class="flex-1 overflow-auto max-w-xl mx-auto w-full flex flex-col pb-20"
+  >
+   <section
+    aria-labelledby="tab-feed"
+    class="p-4 overflow-y-auto flex flex-col space-y-6"
+    id="panel-feed"
+    role="tabpanel"
+    tabindex="0"
+   ></section>
+   <section
+    aria-labelledby="tab-post"
+    class="hidden p-4 overflow-y-auto flex flex-col space-y-6"
+    id="panel-post"
+    role="tabpanel"
+    tabindex="0"
+   >
+    <form autocomplete="off" class="flex flex-col space-y-5" id="postForm">
+     <div>
+      <label
+       class="block mb-2 font-semibold text-black text-sm"
+       for="post-text"
+      >
+       Tulis sesuatu...
+      </label>
+      <textarea
+       class="w-full border border-gray-400 rounded-md p-3 resize-none text-black focus:outline-none focus:ring-2 focus:ring-black"
+       id="post-text"
+       placeholder="Bagikan cerita, foto, atau video hitam putih Anda"
+       required=""
+       rows="4"
+      ></textarea>
+     </div>
+     <div>
+      <label
+       class="block mb-2 font-semibold text-black text-sm"
+       for="post-photo"
+      >
+       Upload Foto
+      </label>
+      <input
+       accept="image/*"
+       aria-label="Upload foto hitam putih"
+       class="w-full text-black"
+       id="post-photo"
+       type="file"
+      />
+     </div>
+     <div>
+      <label
+       class="block mb-2 font-semibold text-black text-sm"
+       for="post-video"
+      >
+       Upload Video
+      </label>
+      <input
+       accept="video/*"
+       aria-label="Upload video hitam putih"
+       class="w-full text-black"
+       id="post-video"
+       type="file"
+      />
+     </div>
+     <button
+      class="bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-900 transition"
+      type="submit"
+     >
+      Posting
+     </button>
+    </form>
+   </section>
+   <section
+    aria-labelledby="tab-leaderboard"
+    class="hidden p-4 overflow-y-auto flex flex-col space-y-4"
+    id="panel-leaderboard"
+    role="tabpanel"
+    tabindex="0"
+   >
+    <h2 class="text-xl font-bold text-center text-black">Top 50 Vimos</h2>
+    <p class="text-center text-gray-600">Pengguna dengan jumlah like postingan terbanyak.</p>
+    <div id="leaderboardList" class="space-y-3">
+     </div>
+   </section>
+   <section
+    aria-labelledby="tab-profile"
+    class="hidden p-4 overflow-y-auto flex flex-col items-center space-y-6"
+    id="panel-profile"
+    role="tabpanel"
+    tabindex="0"
+   >
+    <div
+     class="w-full max-w-md bg-white border border-gray-300 rounded-md p-6 shadow-sm"
+     id="authContainer"
+    >
+     <h2 class="text-xl font-bold mb-4 text-center" id="authTitle">
+      Login ke Vimos
+     </h2>
+     <form autocomplete="off" class="flex flex-col space-y-4" id="authForm">
+      <input
+       aria-label="Email"
+       class="border border-gray-400 rounded-md p-3 text-black focus:outline-none focus:ring-2 focus:ring-black"
+       id="authEmail"
+       placeholder="Email"
+       required=""
+       type="email"
+      />
+      <input
+       aria-label="Password"
+       class="border border-gray-400 rounded-md p-3 text-black focus:outline-none focus:ring-2 focus:ring-black"
+       id="authPassword"
+       placeholder="Password"
+       required=""
+       type="password"
+      />
+      <button
+       class="bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-900 transition"
+       id="authSubmit"
+       type="submit"
+      >
+       Login
+      </button>
+     </form>
+     <p class="text-center mt-4 text-gray-700">
+      Belum punya akun?
+      <button
+       class="text-black font-semibold underline focus:outline-none"
+       id="toggleAuthMode"
+       type="button"
+      >
+       Daftar di sini
+      </button>
+     </p>
+    </div>
+    <div
+     class="hidden w-full max-w-md bg-white border border-gray-300 rounded-md p-6 shadow-sm flex flex-col items-center space-y-4"
+     id="profileContainer"
+    >
+     <div class="relative">
+      <img
+       alt="Foto profil pengguna"
+       class="w-24 h-24 rounded-full object-cover border-4 border-black"
+       height="96"
+       id="profilePhoto"
+       src="https://firebasestorage.googleapis.com/v0/b/projectchat01-d16bc.appspot.com/o/photos%2F-OYOpw_2jA8Wy2npz5KM_1000360210.png?alt=media&token=9ec65bd1-e668-4186-b091-e98bd303d256"
+       width="96"
+      />
+      <label
+       class="absolute bottom-0 right-0 bg-black text-white rounded-full p-2 cursor-pointer hover:bg-gray-800"
+       for="profilePhotoInput"
+       title="Ganti Foto Profil"
+      >
+       <i class="fas fa-camera"></i>
+      </label>
+      <input accept="image/*" class="hidden" id="profilePhotoInput" type="file" />
+     </div>
+     <form class="w-full flex flex-col space-y-4" id="profileForm">
+      <div>
+       <label class="block font-semibold text-black mb-1" for="profileNameInput">
+        Nama
+       </label>
+       <input
+        aria-label="Nama pengguna"
+        class="w-full border border-gray-400 rounded-md p-3 text-black focus:outline-none focus:ring-2 focus:ring-black"
+        id="profileNameInput"
+        required=""
+        type="text"
+       />
+      </div>
+      <div>
+       <label class="block font-semibold text-black mb-1" for="profileBioInput">
+        Bio
+       </label>
+       <textarea
+        aria-label="Bio pengguna"
+        class="w-full border border-gray-400 rounded-md p-3 resize-none text-black focus:outline-none focus:ring-2 focus:ring-black"
+        id="profileBioInput"
+        placeholder="Tulis bio singkat tentang diri Anda..."
+        rows="3"
+       ></textarea>
+      </div>
+      <button
+       class="bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-900 transition"
+       type="submit"
+      >
+       Simpan Profil
+      </button>
+     </form>
+     <button
+      class="bg-red-600 text-white py-3 rounded-md font-semibold hover:bg-red-700 transition w-full"
+      id="logoutBtn"
+      type="button"
+     >
+      Logout
+     </button>
+    </div>
+   </section>
+  </main>
+  <nav
+   aria-label="Navigasi utama Vimos"
+   class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 shadow-inner max-w-xl mx-auto flex justify-between text-black text-xs font-semibold"
+   style="height:56px"
+  >
+   <button
+    aria-controls="panel-feed"
+    aria-selected="true"
+    class="flex-1 flex flex-col items-center justify-center border-t-4 border-black focus:outline-none"
+    id="tab-feed"
+    role="tab"
+    tabindex="0"
+    type="button"
+   >
+    <i class="fas fa-home text-lg mb-1"></i>
+    Feed
+   </button>
+   <button
+    aria-controls="panel-post"
+    aria-selected="false"
+    class="flex-1 flex flex-col items-center justify-center border-t-4 border-transparent hover:border-gray-700 focus:outline-none"
+    id="tab-post"
+    role="tab"
+    tabindex="-1"
+    type="button"
+   >
+    <i class="fas fa-plus-circle text-lg mb-1"></i>
+    Post
+   </button>
+   <button
+    aria-controls="panel-leaderboard"
+    aria-selected="false"
+    class="flex-1 flex flex-col items-center justify-center border-t-4 border-transparent hover:border-gray-700 focus:outline-none"
+    id="tab-leaderboard"
+    role="tab"
+    tabindex="-1"
+    type="button"
+   >
+    <i class="fas fa-medal text-lg mb-1"></i>
+    Leaderboard
+   </button>
+   <button
+    aria-controls="panel-profile"
+    aria-selected="false"
+    class="flex-1 flex flex-col items-center justify-center border-t-4 border-transparent hover:border-gray-700 focus:outline-none"
+    id="tab-profile"
+    role="tab"
+    tabindex="-1"
+    type="button"
+   >
+    <i class="fas fa-user text-lg mb-1"></i>
+    Profil
+   </button>
+  </nav>
+  <script>
+   // Firebase config and initialization
+   const firebaseConfig = {
+    apiKey: "AIzaSyAgOPD5DDtjExQaVeu6VLFI7CMP9i8VOQw",
+    authDomain: "projectchat01-d16bc.firebaseapp.com",
+    databaseURL: "https://projectchat01-d16bc-default-rtdb.firebaseio.com",
+    projectId: "projectchat01-d16bc",
+    storageBucket: "projectchat01-d16bc.appspot.com",
+    messagingSenderId: "163313653543",
+    appId: "1:163313653543:web:5a4c8b70d6dedb8011bb02",
+    measurementId: "G-M8JFL7S0TV",
+   };
+   firebase.initializeApp(firebaseConfig);
+   const auth = firebase.auth();
+   const db = firebase.database();
+   const storage = firebase.storage();
+
+   // Tab switching logic
+   const tabs = document.querySelectorAll(
+    'nav[aria-label="Navigasi utama Vimos"] button[role="tab"]'
+   );
+   const panels = document.querySelectorAll('section[role="tabpanel"]');
+
+   tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+     if (tab.disabled) return;
+     tabs.forEach((t) => {
+      t.setAttribute("aria-selected", "false");
+      t.classList.remove("border-black");
+      t.classList.add("border-transparent");
+      t.tabIndex = -1;
+     });
+     panels.forEach((panel) => {
+      panel.classList.add("hidden");
+     });
+     tab.setAttribute("aria-selected", "true");
+     tab.classList.add("border-black");
+     tab.classList.remove("border-transparent");
+     tab.tabIndex = 0;
+     const panelId = tab.getAttribute("aria-controls");
+     const panel = document.getElementById(panelId);
+     panel.classList.remove("hidden");
+     panel.focus();
+
+     // Load leaderboard when the tab is clicked
+     if (panelId === "panel-leaderboard") {
+      loadLeaderboard();
+     }
+    });
+   });
+
+   let tabFocus = 0;
+   tabs.forEach((tab, i) => {
+    tab.addEventListener("keydown", (e) => {
+     if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      tabs[tabFocus].tabIndex = -1;
+      if (e.key === "ArrowRight") {
+       tabFocus = (tabFocus + 1) % tabs.length;
+      } else if (e.key === "ArrowLeft") {
+       tabFocus = (tabFocus - 1 + tabs.length) % tabs.length;
+      }
+      if (tabs[tabFocus].disabled) {
+       if (e.key === "ArrowRight") {
+        tabFocus = (tabFocus + 1) % tabs.length;
+       } else {
+        tabFocus = (tabFocus - 1 + tabs.length) % tabs.length;
+       }
+      }
+      tabs[tabFocus].tabIndex = 0;
+      tabs[tabFocus].focus();
+     }
+    });
+   });
+
+   // Default profile photo URL
+   const defaultProfilePhoto =
+    "https://firebasestorage.googleapis.com/v0/b/projectchat01-d16bc.appspot.com/o/photos%2F-OYOpw_2jA8Wy2npz5KM_1000360210.png?alt=media&token=9ec65bd1-e668-4186-b091-e98bd303d256";
+
+   // Utility: create element with classes and attributes
+   function createElement(tag, options = {}) {
+    const el = document.createElement(tag);
+    if (options.classes) el.className = options.classes;
+    if (options.attrs) {
+     for (const key in options.attrs) {
+      el.setAttribute(key, options.attrs[key]);
+     }
+    }
+    if (options.text) el.textContent = options.text;
+    return el;
+   }
+
+   // Render a post item in feed with like/dislike, follow/unfollow, and comments with toggle
+   function renderPost(post) {
+    const article = createElement("article", {
+     classes: "border border-gray-300 rounded-md p-4 bg-white shadow-sm",
+    });
+    const header = createElement("header", {
+     classes: "flex items-center space-x-3 mb-3",
+    });
+    const profileImg = createElement("img", {
+     classes: "w-10 h-10 rounded-full object-cover cursor-pointer",
+     attrs: {
+      src: post.userPhoto || defaultProfilePhoto,
+      alt: `Foto profil pengguna ${post.userName || "Anonim"}`,
+     },
+    });
+    profileImg.width = 40;
+    profileImg.height = 40;
+    profileImg.addEventListener("click", () => {
+     openUserProfile(post.userId);
+    });
+    const userInfo = createElement("div");
+    const userName = createElement("h2", {
+     classes: "font-semibold text-black text-sm cursor-pointer",
+     text: post.userName || "Anonim",
+    });
+    userName.addEventListener("click", () => {
+     openUserProfile(post.userId);
+    });
+    const time = createElement("time", { classes: "text-xs text-gray-600" });
+    const date = new Date(post.timestamp || Date.now());
+    time.textContent = date.toLocaleString("id-ID", {
+     dateStyle: "medium",
+     timeStyle: "short",
+    });
+    userInfo.appendChild(userName);
+    userInfo.appendChild(time);
+    header.appendChild(profileImg);
+    header.appendChild(userInfo);
+    article.appendChild(header);
+
+    if (post.text) {
+     const p = createElement("p", {
+      classes: "text-black mb-3 leading-relaxed",
+      text: post.text,
+     });
+     article.appendChild(p);
+    }
+
+    if (post.photoURL) {
+     const img = createElement("img", {
+      classes: "w-full rounded-md object-cover",
+      attrs: {
+       src: post.photoURL,
+       alt: "Foto hitam putih yang diunggah pengguna",
+       loading: "lazy",
+      },
+     });
+     img.height = 300;
+     article.appendChild(img);
+    }
+
+    if (post.videoURL) {
+     const video = createElement("video", {
+      classes: "w-full rounded-md",
+      attrs: {
+       controls: "",
+       preload: "metadata",
+       poster: "https://placehold.co/600x300/png?text=Thumbnail+Video+Hitam+Putih",
+      },
+     });
+     const source = createElement("source", {
+      attrs: { src: post.videoURL, type: "video/mp4" },
+     });
+     video.appendChild(source);
+     video.textContent = "Browser Anda tidak mendukung video.";
+     article.appendChild(video);
+    }
+
+    // Like/Dislike and Follow buttons container
+    const footer = createElement("footer", {
+     classes: "mt-3 flex space-x-6 text-gray-700 text-sm items-center",
+    });
+
+    // Like button
+    const likeBtn = createElement("button", {
+     classes: "flex items-center space-x-1 hover:text-black focus:outline-none",
+     attrs: { type: "button" },
+    });
+    const likeIcon = createElement("i", { classes: "far fa-thumbs-up" });
+    const likeCount = createElement("span", {
+     text: post.likes ? Object.keys(post.likes).length : 0,
+    });
+    likeBtn.appendChild(likeIcon);
+    likeBtn.appendChild(likeCount);
+    footer.appendChild(likeBtn);
+
+    // Dislike button
+    const dislikeBtn = createElement("button", {
+     classes: "flex items-center space-x-1 hover:text-black focus:outline-none",
+     attrs: { type: "button" },
+    });
+    const dislikeIcon = createElement("i", { classes: "far fa-thumbs-down" });
+    const dislikeCount = createElement("span", {
+     text: post.dislikes ? Object.keys(post.dislikes).length : 0,
+    });
+    dislikeBtn.appendChild(dislikeIcon);
+    dislikeBtn.appendChild(dislikeCount);
+    footer.appendChild(dislikeBtn);
+
+    // Follow/Unfollow button
+    const followBtn = createElement("button", {
+     classes:
+      "ml-auto bg-black text-white px-3 py-1 rounded-md text-xs font-semibold hover:bg-gray-900 focus:outline-none",
+     attrs: { type: "button" },
+    });
+    footer.appendChild(followBtn);
+
+    article.appendChild(footer);
+
+    // Comments toggle button
+    const toggleCommentsBtn = createElement("button", {
+     classes: "mt-3 text-sm text-blue-600 hover:underline focus:outline-none",
+     attrs: { type: "button" },
+     text: "Tampilkan Komentar",
+    });
+    article.appendChild(toggleCommentsBtn);
+
+    // Comments container (hidden by default)
+    const commentsContainer = createElement("div", {
+     classes: "mt-3 space-y-3 hidden",
+    });
+    article.appendChild(commentsContainer);
+
+    // Comment form (hidden by default)
+    const commentForm = createElement("form", {
+     classes: "flex space-x-2 mt-3 hidden",
+    });
+    const commentInput = createElement("input", {
+     classes:
+      "flex-1 border border-gray-400 rounded-md px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-black",
+     attrs: { type: "text", placeholder: "Tulis komentar...", "aria-label": "Tulis komentar" },
+    });
+    const commentSubmit = createElement("button", {
+     classes:
+      "bg-black text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-900 transition",
+     attrs: { type: "submit" },
+     text: "Kirim",
+    });
+    commentForm.appendChild(commentInput);
+    commentForm.appendChild(commentSubmit);
+    article.appendChild(commentForm);
+
+    // Current user id
+    const currentUser = auth.currentUser;
+    const currentUserId = currentUser ? currentUser.uid : null;
+
+    // Set initial like/dislike/follow states
+    function updateLikeDislikeUI() {
+     if (currentUserId && post.likes && post.likes[currentUserId]) {
+      likeIcon.classList.remove("far");
+      likeIcon.classList.add("fas");
+     } else {
+      likeIcon.classList.remove("fas");
+      likeIcon.classList.add("far");
+     }
+     if (currentUserId && post.dislikes && post.dislikes[currentUserId]) {
+      dislikeIcon.classList.remove("far");
+      dislikeIcon.classList.add("fas");
+     } else {
+      dislikeIcon.classList.remove("fas");
+      dislikeIcon.classList.add("far");
+     }
+    }
+
+    function updateFollowUI(isFollowing) {
+     if (isFollowing) {
+      followBtn.textContent = "Unfollow";
+      followBtn.classList.remove("bg-black");
+      followBtn.classList.add("bg-gray-700");
+     } else {
+      followBtn.textContent = "Follow";
+      followBtn.classList.remove("bg-gray-700");
+      followBtn.classList.add("bg-black");
+     }
+    }
+
+    // Like button click handler
+    likeBtn.addEventListener("click", async () => {
+     if (!currentUserId) {
+      alert("Silakan login untuk menyukai postingan.");
+      return;
+     }
+     const postRef = db.ref(`posts/${post.id}/likes`);
+     const dislikeRef = db.ref(`posts/${post.id}/dislikes`);
+     try {
+      if (post.likes && post.likes[currentUserId]) {
+       await postRef.child(currentUserId).remove();
+       post.likes[currentUserId] = undefined;
+       likeCount.textContent = Object.keys(post.likes).filter((k) => post.likes[k]).length;
+      } else {
+       await postRef.child(currentUserId).set(true);
+       post.likes = post.likes || {};
+       post.likes[currentUserId] = true;
+       likeCount.textContent = Object.keys(post.likes).length;
+       if (post.dislikes && post.dislikes[currentUserId]) {
+        await dislikeRef.child(currentUserId).remove();
+        post.dislikes[currentUserId] = undefined;
+        dislikeCount.textContent = Object.keys(post.dislikes).filter((k) => post.dislikes[k]).length;
+       }
+      }
+      updateLikeDislikeUI();
+     } catch (error) {
+      alert("Gagal memperbarui like: " + error.message);
+     }
+    });
+
+    // Dislike button click handler
+    dislikeBtn.addEventListener("click", async () => {
+     if (!currentUserId) {
+      alert("Silakan login untuk tidak menyukai postingan.");
+      return;
+     }
+     const postRef = db.ref(`posts/${post.id}/dislikes`);
+     const likeRef = db.ref(`posts/${post.id}/likes`);
+     try {
+      if (post.dislikes && post.dislikes[currentUserId]) {
+       await postRef.child(currentUserId).remove();
+       post.dislikes[currentUserId] = undefined;
+       dislikeCount.textContent = Object.keys(post.dislikes).filter((k) => post.dislikes[k]).length;
+      } else {
+       await postRef.child(currentUserId).set(true);
+       post.dislikes = post.dislikes || {};
+       post.dislikes[currentUserId] = true;
+       dislikeCount.textContent = Object.keys(post.dislikes).length;
+       if (post.likes && post.likes[currentUserId]) {
+        await likeRef.child(currentUserId).remove();
+        post.likes[currentUserId] = undefined;
+        likeCount.textContent = Object.keys(post.likes).filter((k) => post.likes[k]).length;
+       }
+      }
+      updateLikeDislikeUI();
+     } catch (error) {
+      alert("Gagal memperbarui dislike: " + error.message);
+     }
+    });
+
+    // Follow/unfollow button click handler
+    async function checkFollowStatus() {
+     if (!currentUserId || !post.userId || currentUserId === post.userId) {
+      followBtn.style.display = "none";
+      return;
+     }
+     followBtn.style.display = "inline-flex";
+     try {
+      const snapshot = await db.ref(`followers/${currentUserId}/${post.userId}`).once("value");
+      const isFollowing = snapshot.exists();
+      updateFollowUI(isFollowing);
+     } catch {
+      updateFollowUI(false);
+     }
+    }
+
+    followBtn.addEventListener("click", async () => {
+     if (!currentUserId || !post.userId) {
+      alert("Silakan login untuk mengikuti pengguna.");
+      return;
+     }
+     if (currentUserId === post.userId) {
+      alert("Anda tidak dapat mengikuti diri sendiri.");
+      return;
+     }
+     const followerRef = db.ref(`followers/${currentUserId}/${post.userId}`);
+     try {
+      const snapshot = await followerRef.once("value");
+      if (snapshot.exists()) {
+       await followerRef.remove();
+       updateFollowUI(false);
+      } else {
+       await followerRef.set(true);
+       updateFollowUI(true);
+      }
+     } catch (error) {
+      alert("Gagal memperbarui status follow: " + error.message);
+     }
+    });
+
+    updateLikeDislikeUI();
+    checkFollowStatus();
+
+    // Load and render comments
+    const commentsRef = db.ref(`comments/${post.id}`);
+    function renderComment(comment) {
+     const commentDiv = createElement("div", {
+      classes: "border border-gray-300 rounded-md p-2 bg-gray-50",
+     });
+     const author = createElement("p", {
+      classes: "font-semibold text-black text-sm",
+      text: comment.userName || "Anonim",
+     });
+     const content = createElement("p", {
+      classes: "text-black text-sm",
+      text: comment.text,
+     });
+     const time = createElement("time", { classes: "text-xs text-gray-600" });
+     const date = new Date(comment.timestamp || Date.now());
+     time.textContent = date.toLocaleString("id-ID", {
+      dateStyle: "medium",
+      timeStyle: "short",
+     });
+     commentDiv.appendChild(author);
+     commentDiv.appendChild(content);
+     commentDiv.appendChild(time);
+     return commentDiv;
+    }
+    function loadComments() {
+     commentsContainer.innerHTML = "";
+     commentsRef.orderByChild("timestamp").limitToLast(20).once("value", (snapshot) => {
+      const comments = [];
+      snapshot.forEach((child) => {
+       const comment = child.val();
+       comment.id = child.key;
+       comments.push(comment);
+      });
+      comments.sort((a, b) => a.timestamp - b.timestamp);
+      comments.forEach((comment) => {
+       const commentEl = renderComment(comment);
+       commentsContainer.appendChild(commentEl);
+      });
+     });
+    }
+    loadComments();
+
+    // Toggle comments visibility
+    toggleCommentsBtn.addEventListener("click", () => {
+     const isHidden = commentsContainer.classList.contains("hidden");
+     if (isHidden) {
+      commentsContainer.classList.remove("hidden");
+      commentForm.classList.remove("hidden");
+      toggleCommentsBtn.textContent = "Sembunyikan Komentar";
+     } else {
+      commentsContainer.classList.add("hidden");
+      commentForm.classList.add("hidden");
+      toggleCommentsBtn.textContent = "Tampilkan Komentar";
+     }
+    });
+
+    // Handle comment form submission
+    commentForm.addEventListener("submit", async (e) => {
+     e.preventDefault();
+     if (!currentUserId) {
+      alert("Silakan login untuk mengomentari postingan.");
+      return;
+     }
+     const commentText = commentInput.value.trim();
+     if (!commentText) return;
+     commentSubmit.disabled = true;
+     commentSubmit.textContent = "Mengirim...";
+     try {
+      const user = auth.currentUser;
+      const newCommentRef = commentsRef.push();
+      await newCommentRef.set({
+       userId: user.uid,
+       userName: user.displayName || user.email.split("@")[0],
+       text: commentText,
+       timestamp: Date.now(),
+      });
+      commentInput.value = "";
+      loadComments();
+     } catch (error) {
+      alert("Gagal mengirim komentar: " + error.message);
+     } finally {
+      commentSubmit.disabled = false;
+      commentSubmit.textContent = "Kirim";
+     }
+    });
+
+    return article;
+   }
+
+   // Load posts from Firebase Realtime Database
+   const feedPanel = document.getElementById("panel-feed");
+   function loadPosts(searchTerm = "") {
+    feedPanel.innerHTML = "";
+    db.ref("posts")
+     .orderByChild("timestamp")
+     .limitToLast(50)
+     .once("value", (snapshot) => {
+      const posts = [];
+      snapshot.forEach((child) => {
+       const post = child.val();
+       post.id = child.key;
+       posts.push(post);
+      });
+      posts.sort((a, b) => b.timestamp - a.timestamp);
+      const filtered = posts.filter((p) => {
+       if (!searchTerm) return true;
+       const text = p.text ? p.text.toLowerCase() : "";
+       const userName = p.userName ? p.userName.toLowerCase() : "";
+       return text.includes(searchTerm.toLowerCase()) || userName.includes(searchTerm.toLowerCase());
+      });
+      if (filtered.length === 0) {
+       const noPost = createElement("p", {
+        classes: "text-center text-gray-600 mt-10",
+        text: "Tidak ada postingan ditemukan.",
+       });
+       feedPanel.appendChild(noPost);
+       return;
+      }
+      filtered.forEach((post) => {
+       const postEl = renderPost(post);
+       feedPanel.appendChild(postEl);
+      });
+     });
+   }
+
+   // Initial load
+   loadPosts();
+
+   // Search input event
+   const searchInput = document.getElementById("searchInput");
+   let searchTimeout = null;
+   searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+     loadPosts(searchInput.value.trim());
+    }, 300);
+   });
+
+   // Handle post form submission
+   const postForm = document.getElementById("postForm");
+   postForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!auth.currentUser) {
+     alert("Silakan login terlebih dahulu untuk membuat postingan.");
+     return;
+    }
+    const text = document.getElementById("post-text").value.trim();
+    const photoFile = document.getElementById("post-photo").files[0];
+    const videoFile = document.getElementById("post-video").files[0];
+
+    if (!text && !photoFile && !videoFile) {
+     alert("Mohon isi teks atau unggah foto/video.");
+     return;
+    }
+
+    const submitBtn = postForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Mengunggah...";
+
+    try {
+     const user = auth.currentUser;
+     const userName = user.displayName || user.email.split("@")[0];
+     const userPhoto = user.photoURL || defaultProfilePhoto;
+
+     const newPostRef = db.ref("posts").push();
+     const postData = {
+      userId: user.uid,
+      userName,
+      userPhoto,
+      text: text || "",
+      timestamp: Date.now(),
+     };
+
+     if (photoFile) {
+      const photoRef = storage.ref().child(`photos/${newPostRef.key}_${photoFile.name}`);
+      const photoSnapshot = await photoRef.put(photoFile);
+      const photoURL = await photoSnapshot.ref.getDownloadURL();
+      postData.photoURL = photoURL;
+     }
+
+     if (videoFile) {
+      const videoRef = storage.ref().child(`videos/${newPostRef.key}_${videoFile.name}`);
+      const videoSnapshot = await videoRef.put(videoFile);
+      const videoURL = await videoSnapshot.ref.getDownloadURL();
+      postData.videoURL = videoURL;
+     }
+
+     await newPostRef.set(postData);
+
+     postForm.reset();
+     alert("Posting berhasil diunggah!");
+
+     document.getElementById("tab-feed").click();
+     loadPosts(searchInput.value.trim());
+    } catch (error) {
+     alert("Terjadi kesalahan saat mengunggah: " + error.message);
+    } finally {
+     submitBtn.disabled = false;
+     submitBtn.textContent = "Posting";
+    }
+   });
+
+   // Authentication UI and logic
+   const authContainer = document.getElementById("authContainer");
+   const profileContainer = document.getElementById("profileContainer");
+   const authForm = document.getElementById("authForm");
+   const authTitle = document.getElementById("authTitle");
+   const authSubmit = document.getElementById("authSubmit");
+   const toggleAuthModeBtn = document.getElementById("toggleAuthMode");
+   const profilePhoto = document.getElementById("profilePhoto");
+   const logoutBtn = document.getElementById("logoutBtn");
+   const profileForm = document.getElementById("profileForm");
+   const profileNameInput = document.getElementById("profileNameInput");
+   const profileBioInput = document.getElementById("profileBioInput");
+   const profilePhotoInput = document.getElementById("profilePhotoInput");
+
+   let isLoginMode = true;
+
+   toggleAuthModeBtn.addEventListener("click", () => {
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) {
+     authTitle.textContent = "Login ke Vimos";
+     authSubmit.textContent = "Login";
+     toggleAuthModeBtn.textContent = "Daftar di sini";
+    } else {
+     authTitle.textContent = "Daftar Akun Baru";
+     authSubmit.textContent = "Daftar";
+     toggleAuthModeBtn.textContent = "Sudah punya akun? Login";
+    }
+   });
+
+   authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value.trim();
+    if (!email || !password) {
+     alert("Mohon isi email dan password.");
+     return;
+    }
+    authSubmit.disabled = true;
+    authSubmit.textContent = isLoginMode ? "Login..." : "Mendaftar...";
+    try {
+     if (isLoginMode) {
+      await auth.signInWithEmailAndPassword(email, password);
+     } else {
+      await auth.createUserWithEmailAndPassword(email, password);
+     }
+     authForm.reset();
+    } catch (error) {
+     alert("Terjadi kesalahan: " + error.message);
+    } finally {
+     authSubmit.disabled = false;
+     authSubmit.textContent = isLoginMode ? "Login" : "Daftar";
+    }
+   });
+
+   logoutBtn.addEventListener("click", async () => {
+    try {
+     await auth.signOut();
+    } catch (error) {
+     alert("Gagal logout: " + error.message);
+    }
+   });
+
+   // Load user profile data from Realtime Database
+   async function loadUserProfile(uid) {
+    try {
+     const snapshot = await db.ref(`users/${uid}`).once("value");
+     const data = snapshot.val() || {};
+     profileNameInput.value = data.name || auth.currentUser.displayName || "";
+     profileBioInput.value = data.bio || "";
+     if (auth.currentUser.photoURL) {
+      profilePhoto.src = auth.currentUser.photoURL;
+     } else {
+      profilePhoto.src = defaultProfilePhoto;
+     }
+    } catch (error) {
+     console.error("Gagal memuat profil:", error);
+    }
+   }
+
+   // Save user profile data to Realtime Database and update Firebase Auth profile
+   profileForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+     alert("Silakan login terlebih dahulu.");
+     return;
+    }
+    const newName = profileNameInput.value.trim();
+    const newBio = profileBioInput.value.trim();
+
+    if (!newName) {
+     alert("Nama tidak boleh kosong.");
+     return;
+    }
+
+    const saveBtn = profileForm.querySelector('button[type="submit"]');
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Menyimpan...";
+
+    try {
+     await user.updateProfile({ displayName: newName });
+     await db.ref(`users/${user.uid}`).update({ name: newName, bio: newBio });
+     alert("Profil berhasil diperbarui.");
+    } catch (error) {
+     alert("Gagal menyimpan profil: " + error.message);
+    } finally {
+     saveBtn.disabled = false;
+     saveBtn.textContent = "Simpan Profil";
+    }
+   });
+
+   // Handle profile photo change
+   profilePhotoInput.addEventListener("change", async () => {
+    const user = auth.currentUser;
+    if (!user) {
+     alert("Silakan login terlebih dahulu.");
+     profilePhotoInput.value = "";
+     return;
+    }
+    const file = profilePhotoInput.files[0];
+    if (!file) return;
+
+    const uploadBtn = profileForm.querySelector('button[type="submit"]');
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Mengunggah foto...";
+
+    try {
+     const photoRef = storage.ref().child(`profilePhotos/${user.uid}_${file.name}`);
+     const snapshot = await photoRef.put(file);
+     const photoURL = await snapshot.ref.getDownloadURL();
+
+     await user.updateProfile({ photoURL });
+     await db.ref(`users/${user.uid}`).update({ photoURL });
+
+     profilePhoto.src = photoURL;
+     alert("Foto profil berhasil diperbarui.");
+    } catch (error) {
+     alert("Gagal mengunggah foto profil: " + error.message);
+    } finally {
+     uploadBtn.disabled = false;
+     uploadBtn.textContent = "Simpan Profil";
+     profilePhotoInput.value = "";
+    }
+   });
+
+   // Update UI based on auth state
+   auth.onAuthStateChanged(async (user) => {
+    if (user) {
+     authContainer.classList.add("hidden");
+     profileContainer.classList.remove("hidden");
+     document.getElementById("tab-post").disabled = false;
+     document.getElementById("tab-post").classList.remove("opacity-50", "cursor-not-allowed");
+     await loadUserProfile(user.uid);
+    } else {
+     authContainer.classList.remove("hidden");
+     profileContainer.classList.add("hidden");
+     document.getElementById("tab-post").disabled = true;
+     document.getElementById("tab-post").classList.add("opacity-50", "cursor-not-allowed");
+     if (document.getElementById("tab-post").getAttribute("aria-selected") === "true") {
+      document.getElementById("tab-feed").click();
+     }
+    }
+   });
+
+   // Open user profile modal or panel (simple alert for demo)
+   function openUserProfile(userId) {
+    if (!userId) {
+     alert("Profil pengguna tidak tersedia.");
+     return;
+    }
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+     document.getElementById("tab-profile").click();
+     return;
+    }
+    db.ref(`users/${userId}`)
+     .once("value")
+     .then((snapshot) => {
+      const data = snapshot.val() || {};
+      const name = data.name || "Pengguna";
+      const bio = data.bio || "-";
+      const photo = data.photoURL || defaultProfilePhoto;
+      showUserProfileModal(userId, name, bio, photo);
+     })
+     .catch(() => {
+      alert("Gagal memuat profil pengguna.");
+     });
+   }
+
+   // Create and show user profile modal with follow/unfollow
+   function showUserProfileModal(userId, name, bio, photoURL) {
+    const existingModal = document.getElementById("userProfileModal");
+    if (existingModal) existingModal.remove();
+
+    const modal = createElement("div", {
+     classes: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50",
+     attrs: { id: "userProfileModal" },
+    });
+    const modalContent = createElement("div", {
+     classes:
+      "bg-white rounded-md p-6 max-w-sm w-full flex flex-col items-center space-y-4 relative",
+    });
+    const closeBtn = createElement("button", {
+     classes: "absolute top-2 right-2 text-gray-600 hover:text-black",
+     attrs: { type: "button" },
+     text: "×",
+    });
+    closeBtn.style.fontSize = "1.5rem";
+    closeBtn.addEventListener("click", () => modal.remove());
+
+    const profileImg = createElement("img", {
+     classes: "w-20 h-20 rounded-full object-cover border-2 border-black",
+     attrs: { src: photoURL || defaultProfilePhoto, alt: `Foto profil ${name}` },
+    });
+    profileImg.width = 80;
+    profileImg.height = 80;
+    const nameEl = createElement("h3", { classes: "text-xl font-bold", text: name });
+    const bioEl = createElement("p", { classes: "text-gray-700 text-center", text: bio });
+
+    const followBtn = createElement("button", {
+     classes:
+      "bg-black text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-900 focus:outline-none",
+    });
+    modalContent.appendChild(closeBtn);
+    modalContent.appendChild(profileImg);
+    modalContent.appendChild(nameEl);
+    modalContent.appendChild(bioEl);
+    modalContent.appendChild(followBtn);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    const currentUser = auth.currentUser;
+    if (!currentUser || currentUser.uid === userId) {
+     followBtn.style.display = "none";
+     return;
+    }
+
+    const followerRef = db.ref(`followers/${currentUser.uid}/${userId}`);
+
+    async function updateFollowBtn() {
+     try {
+      const snapshot = await followerRef.once("value");
+      if (snapshot.exists()) {
+       followBtn.textContent = "Unfollow";
+       followBtn.classList.remove("bg-black");
+       followBtn.classList.add("bg-gray-700");
+      } else {
+       followBtn.textContent = "Follow";
+       followBtn.classList.remove("bg-gray-700");
+       followBtn.classList.add("bg-black");
+      }
+     } catch {
+      followBtn.textContent = "Follow";
+      followBtn.classList.remove("bg-gray-700");
+      followBtn.classList.add("bg-black");
+     }
+    }
+
+    followBtn.addEventListener("click", async () => {
+     try {
+      const snapshot = await followerRef.once("value");
+      if (snapshot.exists()) {
+       await followerRef.remove();
+       followBtn.textContent = "Follow";
+       followBtn.classList.remove("bg-gray-700");
+       followBtn.classList.add("bg-black");
+      } else {
+       await followerRef.set(true);
+       followBtn.textContent = "Unfollow";
+       followBtn.classList.remove("bg-black");
+       followBtn.classList.add("bg-gray-700");
+      }
+     } catch (error) {
+      alert("Gagal memperbarui status follow: " + error.message);
+     }
+    });
+
+    updateFollowBtn();
+   }
+
+   // --- LOGIKA LEADERBOARD BARU ---
+   const leaderboardList = document.getElementById("leaderboardList");
+
+   async function loadLeaderboard() {
+    leaderboardList.innerHTML = "";
+    const loadingIndicator = createElement("p", {
+     classes: "text-center text-gray-600 mt-10",
+     text: "Memuat Leaderboard...",
+    });
+    leaderboardList.appendChild(loadingIndicator);
+
+    try {
+     const postsSnapshot = await db.ref("posts").once("value");
+     const allPosts = postsSnapshot.val() || {};
+     const userLikeCounts = {};
+
+     // Hitung total like untuk setiap pengguna
+     for (const postId in allPosts) {
+      const post = allPosts[postId];
+      if (post.likes) {
+       const postLikes = Object.keys(post.likes).length;
+       const userId = post.userId;
+       userLikeCounts[userId] = (userLikeCounts[userId] || 0) + postLikes;
+      }
+     }
+
+     const leaderboard = Object.keys(userLikeCounts).map((userId) => ({
+      userId,
+      likes: userLikeCounts[userId],
+     }));
+
+     // Ambil data user (nama, foto)
+     const userIds = leaderboard.map((item) => item.userId);
+     const usersData = {};
+     const usersPromises = userIds.map((userId) =>
+      db
+       .ref(`users/${userId}`)
+       .once("value")
+       .then((snapshot) => {
+        usersData[userId] = snapshot.val() || {};
+       })
+     );
+
+     await Promise.all(usersPromises);
+
+     // Gabungkan data user dan urutkan
+     leaderboard.forEach((item) => {
+      const userData = usersData[item.userId] || {};
+      item.userName = userData.name || "Anonim";
+      item.userPhoto = userData.photoURL || defaultProfilePhoto;
+     });
+
+     leaderboard.sort((a, b) => b.likes - a.likes);
+
+     loadingIndicator.remove();
+     if (leaderboard.length === 0) {
+      const noData = createElement("p", {
+       classes: "text-center text-gray-600",
+       text: "Belum ada data leaderboard.",
+      });
+      leaderboardList.appendChild(noData);
+      return;
+     }
+
+     // Tampilkan 50 besar
+     leaderboard.slice(0, 50).forEach((user, index) => {
+      const item = renderLeaderboardItem(user, index + 1);
+      leaderboardList.appendChild(item);
+     });
+    } catch (error) {
+     console.error("Gagal memuat leaderboard:", error);
+     leaderboardList.innerHTML = "";
+     const errorMsg = createElement("p", {
+      classes: "text-center text-red-600",
+      text: "Terjadi kesalahan saat memuat data.",
+     });
+     leaderboardList.appendChild(errorMsg);
+    }
+   }
+
+   function renderLeaderboardItem(user, rank) {
+    const item = createElement("div", {
+     classes: "flex items-center p-3 border border-gray-300 rounded-md bg-white",
+    });
+
+    const rankEl = createElement("span", {
+     classes: "font-bold text-lg w-8 text-center text-black",
+     text: rank,
+    });
+    item.appendChild(rankEl);
+
+    const profileImg = createElement("img", {
+     classes: "w-10 h-10 rounded-full object-cover ml-2 mr-4",
+     attrs: { src: user.userPhoto, alt: `Foto profil ${user.userName}` },
+    });
+    profileImg.width = 40;
+    profileImg.height = 40;
+    item.appendChild(profileImg);
+
+    const userInfo = createElement("div", {
+     classes: "flex-1",
+    });
+    const userName = createElement("h3", {
+     classes: "font-semibold text-black",
+     text: user.userName,
+    });
+    const likes = createElement("p", {
+     classes: "text-sm text-gray-600",
+     text: `${user.likes} like`,
+    });
+    userInfo.appendChild(userName);
+    userInfo.appendChild(likes);
+    item.appendChild(userInfo);
+
+    item.addEventListener("click", () => {
+     openUserProfile(user.userId);
+    });
+
+    return item;
+   }
+  </script>
+ </body>
+</html>
